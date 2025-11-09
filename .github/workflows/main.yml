@@ -27,7 +27,7 @@ jobs:
       run: |
         sudo apt-get --assume-yes install libleveldb-dev
         find tests -name *.csproj | xargs -I % dotnet add % package coverlet.msbuild
-        dotnet test /p:CollectCoverage=true /p:CoverletOutput='${{ github.workspace }}/TestResults/coverage/' /p:MergeWith='${{ github.workspace }}/TestResults/coverage/coverage.json' /p:CoverletOutputFormat='lcov,json' -m:1
+        dotnet test /p:CollectCoverage=true /p:CoverletOutput='${{ github.workspace }}/TestResults/coverage/' /p:MergeWith='${{ github.workspace }}/TestResults/coverage/coverage.json' /p:CoverletOutputFormat=\"lcov,json\" -m:1
     - name: Coveralls
       uses: coverallsapp/github-action@v2.2.3
       with:
