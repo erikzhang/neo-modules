@@ -34,12 +34,12 @@ public partial class UT_RpcServer
         var validAddr = new JString("NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP");
         var resp = (JObject)_rpcServer.ValidateAddress(validAddr.AsString());
         Assert.AreEqual(resp["address"], validAddr);
-        Assert.AreEqual(true, resp["isvalid"]);
+        Assert.IsTrue(resp["isvalid"].GetBoolean());
 
         var invalidAddr = "ANeo2toNeo3MigrationAddressxwPB2Hz";
         resp = (JObject)_rpcServer.ValidateAddress(invalidAddr);
         Assert.AreEqual(resp["address"], invalidAddr);
-        Assert.AreEqual(false, resp["isvalid"]);
+        Assert.IsFalse(resp["isvalid"].GetBoolean());
     }
 
     [TestMethod]
@@ -48,7 +48,7 @@ public partial class UT_RpcServer
         var emptyAddr = "";
         var resp = (JObject)_rpcServer.ValidateAddress(emptyAddr);
         Assert.AreEqual(resp["address"], emptyAddr);
-        Assert.AreEqual(false, resp["isvalid"]);
+        Assert.IsFalse(resp["isvalid"].GetBoolean());
     }
 
     [TestMethod]
@@ -59,7 +59,7 @@ public partial class UT_RpcServer
         var invalidChecksumAddr = "NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBO";
         var resp = (JObject)_rpcServer.ValidateAddress(invalidChecksumAddr);
         Assert.AreEqual(resp["address"], invalidChecksumAddr);
-        Assert.AreEqual(false, resp["isvalid"]);
+        Assert.IsFalse(resp["isvalid"].GetBoolean());
     }
 
     [TestMethod]
@@ -69,12 +69,12 @@ public partial class UT_RpcServer
         var shortAddr = "NM7Aky765FG8NhhwtxjXRx7jEL1cnw7P";
         var resp = (JObject)_rpcServer.ValidateAddress(shortAddr);
         Assert.AreEqual(resp["address"], shortAddr);
-        Assert.AreEqual(false, resp["isvalid"]);
+        Assert.IsFalse(resp["isvalid"].GetBoolean());
 
         // Address too long
         var longAddr = "NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBPPP";
         resp = (JObject)_rpcServer.ValidateAddress(longAddr);
         Assert.AreEqual(resp["address"], longAddr);
-        Assert.AreEqual(false, resp["isvalid"]);
+        Assert.IsFalse(resp["isvalid"].GetBoolean());
     }
 }

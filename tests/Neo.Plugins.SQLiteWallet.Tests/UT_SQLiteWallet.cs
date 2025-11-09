@@ -100,7 +100,7 @@ public class UT_SQLiteWallet
         var wallet = SQLiteWallet.Create(GetTestWalletPath(), TestPassword, TestSettings);
         var version = wallet.Version;
         Assert.IsNotNull(version);
-        Assert.IsTrue(version.Major >= 0);
+        Assert.IsGreaterThanOrEqualTo(0, version.Major);
     }
 
     [TestMethod]
@@ -200,7 +200,7 @@ public class UT_SQLiteWallet
 
         // Initially no accounts
         var accounts = wallet.GetAccounts().ToArray();
-        Assert.AreEqual(0, accounts.Length);
+        Assert.IsEmpty(accounts);
 
         // Add some accounts
         var privateKey1 = new byte[32];
@@ -212,7 +212,7 @@ public class UT_SQLiteWallet
         var account2 = wallet.CreateAccount(privateKey2);
 
         accounts = wallet.GetAccounts().ToArray();
-        Assert.AreEqual(2, accounts.Length);
+        Assert.HasCount(2, accounts);
         Assert.IsTrue(accounts.Any(a => a.ScriptHash == account1.ScriptHash));
         Assert.IsTrue(accounts.Any(a => a.ScriptHash == account2.ScriptHash));
     }
@@ -280,7 +280,7 @@ public class UT_SQLiteWallet
         // Test encryption
         var encrypted = SQLiteWallet.Encrypt(data, key, iv);
         Assert.IsNotNull(encrypted);
-        Assert.AreEqual(data.Length, encrypted.Length);
+        Assert.HasCount(data.Length, encrypted);
         Assert.IsFalse(data.SequenceEqual(encrypted));
 
         // Test decryption
@@ -313,7 +313,7 @@ public class UT_SQLiteWallet
         var key2 = SQLiteWallet.ToAesKey(password);
 
         Assert.IsNotNull(key1);
-        Assert.AreEqual(32, key1.Length);
+        Assert.HasCount(32, key1);
         Assert.IsTrue(key1.SequenceEqual(key2)); // Should be deterministic
 
         // Test with different password
@@ -359,7 +359,7 @@ public class UT_SQLiteWallet
 
         // Verify all accounts exist
         var retrievedAccounts = wallet.GetAccounts().ToArray();
-        Assert.AreEqual(5, retrievedAccounts.Length);
+        Assert.HasCount(5, retrievedAccounts);
 
         foreach (var account in accounts)
         {

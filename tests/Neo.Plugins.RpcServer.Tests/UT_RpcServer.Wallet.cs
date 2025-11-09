@@ -700,13 +700,13 @@ partial class UT_RpcServer
 
         // invoke verify without signer; should return false
         var resp = (JObject)_rpcServer.InvokeContractVerify(deployedScriptHash);
-        Assert.AreEqual(resp["state"], nameof(VMState.HALT));
-        Assert.AreEqual(false, resp["stack"][0]["value"].AsBoolean());
+        Assert.AreEqual(nameof(VMState.HALT), resp["state"]);
+        Assert.IsFalse(resp["stack"][0]["value"].AsBoolean());
 
         // invoke verify with signer; should return true
         resp = (JObject)_rpcServer.InvokeContractVerify(deployedScriptHash, [], validatorSigner.AsParameter<SignersAndWitnesses>());
-        Assert.AreEqual(resp["state"], nameof(VMState.HALT));
-        Assert.AreEqual(true, resp["stack"][0]["value"].AsBoolean());
+        Assert.AreEqual(nameof(VMState.HALT), resp["state"]);
+        Assert.IsTrue(resp["stack"][0]["value"].AsBoolean());
 
         // invoke verify with wrong input value; should FAULT
         resp = (JObject)_rpcServer.InvokeContractVerify(
@@ -716,8 +716,8 @@ partial class UT_RpcServer
             ]).AsParameter<ContractParameter[]>(),
             validatorSigner.AsParameter<SignersAndWitnesses>()
         );
-        Assert.AreEqual(resp["state"], nameof(VMState.FAULT));
-        Assert.AreEqual(resp["exception"], "Object reference not set to an instance of an object.");
+        Assert.AreEqual(nameof(VMState.FAULT), resp["state"]);
+        Assert.AreEqual("Object reference not set to an instance of an object.", resp["exception"]);
 
         // invoke verify with 1 param and signer; should return true
         resp = (JObject)_rpcServer.InvokeContractVerify(
@@ -727,8 +727,8 @@ partial class UT_RpcServer
             ]).AsParameter<ContractParameter[]>(),
             validatorSigner.AsParameter<SignersAndWitnesses>()
         );
-        Assert.AreEqual(resp["state"], nameof(VMState.HALT));
-        Assert.AreEqual(true, resp["stack"][0]["value"].AsBoolean());
+        Assert.AreEqual(nameof(VMState.HALT), resp["state"]);
+        Assert.IsTrue(resp["stack"][0]["value"].AsBoolean());
 
         // invoke verify with 2 param (which does not exist); should throw Exception
         Assert.ThrowsExactly<RpcException>(
@@ -740,8 +740,7 @@ partial class UT_RpcServer
                 ]).AsParameter<ContractParameter[]>(),
                 validatorSigner.AsParameter<SignersAndWitnesses>()
             ),
-            $"Invalid contract verification function - The smart contract {deployedScriptHash} haven't got verify method with 2 input parameters.",
-            []
+            $"Invalid contract verification function - The smart contract {deployedScriptHash} haven't got verify method with 2 input parameters."
         );
     }
 

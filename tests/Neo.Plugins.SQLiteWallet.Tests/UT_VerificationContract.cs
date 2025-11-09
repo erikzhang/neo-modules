@@ -57,13 +57,13 @@ public class UT_VerificationContract
         // Serialize
         var data = originalContract.ToArray();
         Assert.IsNotNull(data);
-        Assert.IsTrue(data.Length > 0);
+        Assert.IsNotEmpty(data);
 
         // Deserialize
         var deserializedContract = data.AsSerializable<VerificationContract>();
         Assert.IsNotNull(deserializedContract);
         Assert.AreEqual(originalContract.ScriptHash, deserializedContract.ScriptHash);
-        Assert.AreEqual(originalContract.Script.Length, deserializedContract.Script.Length);
-        Assert.AreEqual(originalContract.ParameterList.Length, deserializedContract.ParameterList.Length);
+        Assert.HasCount(originalContract.Script.Length, deserializedContract.Script);
+        Assert.HasCount(originalContract.ParameterList.Length, deserializedContract.ParameterList);
     }
 }

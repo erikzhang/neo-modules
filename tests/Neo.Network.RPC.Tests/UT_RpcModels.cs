@@ -109,7 +109,7 @@ public class UT_RpcModels
         Assert.AreEqual("0x0e1b9bfaa44e60311f6f3c96cfcd6d12c2fc3add", item.Hash.ToString());
         Assert.AreEqual("test", item.Method);
         Assert.AreEqual(1, item.ParametersCount);
-        Assert.AreEqual(true, item.HasReturnValue);
+        Assert.IsTrue(item.HasReturnValue);
         Assert.AreEqual(CallFlags.All, item.CallFlags);
         Assert.AreEqual(json, item.ToJson().ToString());
     }

@@ -324,8 +324,8 @@ public partial class UT_RpcServer
         var actualUnverifiedHashes = ((JArray)((JObject)result)["unverified"]).Select(p => p.AsString()).ToHashSet();
 
         // Assert counts and contents match the pool's state
-        Assert.AreEqual(expectedVerifiedCount, actualVerifiedHashes.Count);
-        Assert.AreEqual(expectedUnverifiedCount, actualUnverifiedHashes.Count);
+        Assert.HasCount(expectedVerifiedCount, actualVerifiedHashes);
+        Assert.HasCount(expectedUnverifiedCount, actualUnverifiedHashes);
         CollectionAssert.AreEquivalent(expectedVerifiedHashes.ToList(), actualVerifiedHashes.ToList());
         CollectionAssert.AreEquivalent(expectedUnverifiedHashes.ToList(), actualUnverifiedHashes.ToList());
     }

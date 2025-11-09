@@ -371,21 +371,21 @@ public partial class UT_RpcServer
         Assert.AreEqual(IPAddress.Parse("127.0.0.1"), settings.BindAddress);
         Assert.AreEqual(string.Empty, settings.SslCert);
         Assert.AreEqual(string.Empty, settings.SslCertPassword);
-        Assert.AreEqual(0, settings.TrustedAuthorities.Length);
+        Assert.IsEmpty(settings.TrustedAuthorities);
         Assert.AreEqual(string.Empty, settings.RpcUser);
         Assert.AreEqual(string.Empty, settings.RpcPass);
-        Assert.AreEqual(true, settings.EnableCors);
+        Assert.IsTrue(settings.EnableCors);
         Assert.AreEqual(20_00000000, settings.MaxGasInvoke);
         Assert.AreEqual(TimeSpan.FromSeconds(60), settings.SessionExpirationTime);
-        Assert.AreEqual(false, settings.SessionEnabled);
-        Assert.AreEqual(true, settings.EnableCors);
-        Assert.AreEqual(0, settings.AllowOrigins.Length);
+        Assert.IsFalse(settings.SessionEnabled);
+        Assert.IsTrue(settings.EnableCors);
+        Assert.IsEmpty(settings.AllowOrigins);
         Assert.AreEqual(60, settings.KeepAliveTimeout);
         Assert.AreEqual(15u, settings.RequestHeadersTimeout);
         Assert.AreEqual(1000_0000, settings.MaxFee); // 0.1 * 10^8
         Assert.AreEqual(100, settings.MaxIteratorResultItems);
         Assert.AreEqual(65535, settings.MaxStackSize);
-        Assert.AreEqual(1, settings.DisabledMethods.Length);
+        Assert.HasCount(1, settings.DisabledMethods);
         Assert.AreEqual("openwallet", settings.DisabledMethods[0]);
         Assert.AreEqual(40, settings.MaxConcurrentConnections);
         Assert.AreEqual(5 * 1024 * 1024, settings.MaxRequestBodySize);

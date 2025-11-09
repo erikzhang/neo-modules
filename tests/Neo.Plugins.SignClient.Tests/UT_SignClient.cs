@@ -142,7 +142,6 @@ public class UT_SignClient
 
         // sign with public key
         var signature = signClient.SignBlock(block, s_publicKey, s_testNetwork);
-        Assert.IsNotNull(signature);
 
         // verify signature
         var signData = block.GetSignData(s_testNetwork);

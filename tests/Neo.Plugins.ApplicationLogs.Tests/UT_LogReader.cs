@@ -123,7 +123,7 @@ public class UT_LogReader
         s_neoSystemFixture = new NeoSystemFixture();
     }
 
-    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    [ClassCleanup]
     public static void ClassCleanup()
     {
         s_neoSystemFixture.Dispose();
@@ -162,7 +162,7 @@ public class UT_LogReader
         executions = (JArray)transactionJson["executions"];
         Assert.HasCount(1, executions);
         Assert.AreEqual(nameof(VMState.HALT), executions[0]["vmstate"]);
-        Assert.AreEqual(true, executions[0]["stack"][0]["value"]);
+        Assert.IsTrue(executions[0]["stack"][0]["value"].GetBoolean());
         notifications = (JArray)executions[0]["notifications"];
         Assert.HasCount(2, notifications);
         Assert.AreEqual("Transfer", notifications[0]["eventname"].AsString());
@@ -191,7 +191,7 @@ public class UT_LogReader
         {
             Assert.AreEqual(VMState.HALT, log.VmState);
             Assert.IsTrue(log.Stack[0].GetBoolean());
-            Assert.AreEqual(2, log.Notifications.Length);
+            Assert.HasCount(2, log.Notifications);
             Assert.AreEqual("Transfer", log.Notifications[0].EventName);
             Assert.AreEqual(log.Notifications[0].ScriptHash, NativeContract.NEO.Hash);
             Assert.AreEqual(1, log.Notifications[0].State[2]);

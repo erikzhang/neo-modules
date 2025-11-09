@@ -171,7 +171,7 @@ public partial class UT_RpcServer
         resp = (JObject)_rpcServer.InvokeScript(Convert.FromBase64String(NeoTransferScript));
         Assert.AreEqual(6, resp.Count);
         Assert.AreEqual(nameof(Boolean), resp["stack"][0]["type"]);
-        Assert.AreEqual(false, resp["stack"][0]["value"]);
+        Assert.IsFalse(resp["stack"][0]["value"].GetBoolean());
     }
 
     [TestMethod]

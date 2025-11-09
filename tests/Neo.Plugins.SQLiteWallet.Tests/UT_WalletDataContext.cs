@@ -114,7 +114,7 @@ public class UT_WalletDataContext
 
         var retrievedContract = context.Contracts.FirstOrDefault(c => c.ScriptHash.SequenceEqual(contract.ScriptHash));
         Assert.IsNotNull(retrievedContract);
-        Assert.AreEqual(contract.RawData.Length, retrievedContract.RawData.Length);
+        Assert.HasCount(contract.RawData.Length, retrievedContract.RawData);
     }
 
     [TestMethod]
@@ -135,7 +135,7 @@ public class UT_WalletDataContext
         var retrievedKey = context.Keys.FirstOrDefault(k => k.Name == key.Name);
         Assert.IsNotNull(retrievedKey);
         Assert.AreEqual(key.Name, retrievedKey.Name);
-        Assert.AreEqual(key.Value.Length, retrievedKey.Value.Length);
+        Assert.HasCount(key.Value.Length, retrievedKey.Value);
     }
 
     [TestMethod]
@@ -190,7 +190,7 @@ public class UT_WalletDataContext
 
         var retrievedKey = context.Keys.FirstOrDefault(k => k.Name == key.Name);
         Assert.IsNotNull(retrievedKey);
-        Assert.AreEqual(5, retrievedKey.Value.Length);
+        Assert.HasCount(5, retrievedKey.Value);
         Assert.AreEqual(6, retrievedKey.Value[0]);
     }
 }
