@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2024 The Neo Project.
+// Copyright (C) 2015-2025 The Neo Project.
 //
 // Key.cs file belongs to the neo project and is free
 // software distributed under the MIT software license, see the
@@ -11,8 +11,8 @@
 
 namespace Neo.Wallets.SQLite;
 
-class Key
+internal class Key
 {
-    public string Name { get; set; }
-    public byte[] Value { get; set; }
+    public required string Name { get; set; }
+    public required byte[] Value { get; set; }
 }

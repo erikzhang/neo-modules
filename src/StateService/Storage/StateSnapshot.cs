@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2024 The Neo Project.
+// Copyright (C) 2015-2025 The Neo Project.
 //
 // StateSnapshot.cs file belongs to the neo project and is free
 // software distributed under the MIT software license, see the
@@ -10,83 +10,81 @@
 // modifications are permitted.
 
 using Neo.Cryptography.MPTTrie;
-using Neo.IO;
+using Neo.Extensions;
 using Neo.Persistence;
 using Neo.Plugins.StateService.Network;
-using System;
 
-namespace Neo.Plugins.StateService.Storage
+namespace Neo.Plugins.StateService.Storage;
+
+class StateSnapshot : IDisposable
 {
-    class StateSnapshot : IDisposable
+    private readonly IStoreSnapshot _snapshot;
+    public Trie Trie;
+
+    public StateSnapshot(IStore store)
     {
-        private readonly ISnapshot snapshot;
-        public Trie Trie;
+        _snapshot = store.GetSnapshot();
+        Trie = new Trie(_snapshot, CurrentLocalRootHash(), StateServiceSettings.Default.FullState);
+    }
 
-        public StateSnapshot(IStore store)
-        {
-            snapshot = store.GetSnapshot();
-            Trie = new Trie(snapshot, CurrentLocalRootHash(), Settings.Default.FullState);
-        }
+    public StateRoot GetStateRoot(uint index)
+    {
+        return _snapshot.TryGet(Keys.StateRoot(index), out var data) ? data.AsSerializable<StateRoot>() : null;
+    }
 
-        public StateRoot GetStateRoot(uint index)
-        {
-            return snapshot.TryGet(Keys.StateRoot(index))?.AsSerializable<StateRoot>();
-        }
+    public void AddLocalStateRoot(StateRoot stateRoot)
+    {
+        _snapshot.Put(Keys.StateRoot(stateRoot.Index), stateRoot.ToArray());
+        _snapshot.Put(Keys.CurrentLocalRootIndex, BitConverter.GetBytes(stateRoot.Index));
+    }
 
-        public void AddLocalStateRoot(StateRoot state_root)
-        {
-            snapshot.Put(Keys.StateRoot(state_root.Index), state_root.ToArray());
-            snapshot.Put(Keys.CurrentLocalRootIndex, BitConverter.GetBytes(state_root.Index));
-        }
-
-        public uint? CurrentLocalRootIndex()
-        {
-            var bytes = snapshot.TryGet(Keys.CurrentLocalRootIndex);
-            if (bytes is null) return null;
+    public uint? CurrentLocalRootIndex()
+    {
+        if (_snapshot.TryGet(Keys.CurrentLocalRootIndex, out var bytes))
             return BitConverter.ToUInt32(bytes);
-        }
+        return null;
+    }
 
-        public UInt256 CurrentLocalRootHash()
-        {
-            var index = CurrentLocalRootIndex();
-            if (index is null) return null;
-            return GetStateRoot((uint)index)?.RootHash;
-        }
+    public UInt256 CurrentLocalRootHash()
+    {
+        var index = CurrentLocalRootIndex();
+        if (index is null) return null;
+        return GetStateRoot((uint)index)?.RootHash;
+    }
 
-        public void AddValidatedStateRoot(StateRoot state_root)
-        {
-            if (state_root?.Witness is null)
-                throw new ArgumentException(nameof(state_root) + " missing witness in invalidated state root");
-            snapshot.Put(Keys.StateRoot(state_root.Index), state_root.ToArray());
-            snapshot.Put(Keys.CurrentValidatedRootIndex, BitConverter.GetBytes(state_root.Index));
-        }
+    public void AddValidatedStateRoot(StateRoot stateRoot)
+    {
+        if (stateRoot.Witness is null)
+            throw new ArgumentException(nameof(stateRoot) + " missing witness in invalidated state root");
+        _snapshot.Put(Keys.StateRoot(stateRoot.Index), stateRoot.ToArray());
+        _snapshot.Put(Keys.CurrentValidatedRootIndex, BitConverter.GetBytes(stateRoot.Index));
+    }
 
-        public uint? CurrentValidatedRootIndex()
-        {
-            var bytes = snapshot.TryGet(Keys.CurrentValidatedRootIndex);
-            if (bytes is null) return null;
+    public uint? CurrentValidatedRootIndex()
+    {
+        if (_snapshot.TryGet(Keys.CurrentValidatedRootIndex, out var bytes))
             return BitConverter.ToUInt32(bytes);
-        }
+        return null;
+    }
 
-        public UInt256 CurrentValidatedRootHash()
-        {
-            var index = CurrentLocalRootIndex();
-            if (index is null) return null;
-            var state_root = GetStateRoot((uint)index);
-            if (state_root is null || state_root.Witness is null)
-                throw new InvalidOperationException(nameof(CurrentValidatedRootHash) + " could not get validated state root");
-            return state_root.RootHash;
-        }
+    public UInt256 CurrentValidatedRootHash()
+    {
+        var index = CurrentLocalRootIndex();
+        if (index is null) return null;
+        var stateRoot = GetStateRoot((uint)index);
+        if (stateRoot is null || stateRoot.Witness is null)
+            throw new InvalidOperationException(nameof(CurrentValidatedRootHash) + " could not get validated state root");
+        return stateRoot.RootHash;
+    }
 
-        public void Commit()
-        {
-            Trie.Commit();
-            snapshot.Commit();
-        }
+    public void Commit()
+    {
+        Trie.Commit();
+        _snapshot.Commit();
+    }
 
-        public void Dispose()
-        {
-            snapshot.Dispose();
-        }
+    public void Dispose()
+    {
+        _snapshot.Dispose();
     }
 }

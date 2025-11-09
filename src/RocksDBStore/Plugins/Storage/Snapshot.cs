@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2024 The Neo Project.
+// Copyright (C) 2015-2025 The Neo Project.
 //
 // Snapshot.cs file belongs to the neo project and is free
 // software distributed under the MIT software license, see the
@@ -11,72 +11,87 @@
 
 using Neo.Persistence;
 using RocksDbSharp;
-using System;
-using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
-namespace Neo.Plugins.Storage
+namespace Neo.Plugins.Storage;
+
+/// <summary>
+/// <remarks>On-chain write operations on a snapshot cannot be concurrent.</remarks>
+/// </summary>
+internal class Snapshot : IStoreSnapshot
 {
-    internal class Snapshot : ISnapshot
+    private readonly RocksDb _db;
+    private readonly RocksDbSharp.Snapshot _snapshot;
+    private readonly WriteBatch _batch;
+    private readonly ReadOptions _options;
+    private readonly Lock _lock = new();
+
+    public IStore Store { get; }
+
+    internal Snapshot(Store store, RocksDb db)
     {
-        private readonly RocksDb db;
-        private readonly RocksDbSharp.Snapshot snapshot;
-        private readonly WriteBatch batch;
-        private readonly ReadOptions options;
+        Store = store;
+        _db = db;
+        _snapshot = db.CreateSnapshot();
+        _batch = new WriteBatch();
 
-        public Snapshot(RocksDb db)
-        {
-            this.db = db;
-            this.snapshot = db.CreateSnapshot();
-            this.batch = new WriteBatch();
+        _options = new ReadOptions();
+        _options.SetFillCache(false);
+        _options.SetSnapshot(_snapshot);
+    }
 
-            options = new ReadOptions();
-            options.SetFillCache(false);
-            options.SetSnapshot(snapshot);
-        }
+    public void Commit()
+    {
+        lock (_lock)
+            _db.Write(_batch, Options.WriteDefault);
+    }
 
-        public void Commit()
-        {
-            db.Write(batch, Options.WriteDefault);
-        }
+    public void Delete(byte[] key)
+    {
+        lock (_lock)
+            _batch.Delete(key);
+    }
 
-        public void Delete(byte[] key)
-        {
-            batch.Delete(key);
-        }
+    public void Put(byte[] key, byte[] value)
+    {
+        lock (_lock)
+            _batch.Put(key, value);
+    }
 
-        public void Put(byte[] key, byte[] value)
-        {
-            batch.Put(key, value);
-        }
+    /// <inheritdoc/>
+    public IEnumerable<(byte[] Key, byte[] Value)> Find(byte[]? keyOrPrefix, SeekDirection direction)
+    {
+        keyOrPrefix ??= [];
 
-        public IEnumerable<(byte[] Key, byte[] Value)> Seek(byte[] keyOrPrefix, SeekDirection direction)
-        {
-            if (keyOrPrefix == null) keyOrPrefix = Array.Empty<byte>();
+        using var it = _db.NewIterator(readOptions: _options);
 
-            using var it = db.NewIterator(readOptions: options);
+        if (direction == SeekDirection.Forward)
+            for (it.Seek(keyOrPrefix); it.Valid(); it.Next())
+                yield return (it.Key(), it.Value());
+        else
+            for (it.SeekForPrev(keyOrPrefix); it.Valid(); it.Prev())
+                yield return (it.Key(), it.Value());
+    }
 
-            if (direction == SeekDirection.Forward)
-                for (it.Seek(keyOrPrefix); it.Valid(); it.Next())
-                    yield return (it.Key(), it.Value());
-            else
-                for (it.SeekForPrev(keyOrPrefix); it.Valid(); it.Prev())
-                    yield return (it.Key(), it.Value());
-        }
+    public bool Contains(byte[] key)
+    {
+        return _db.Get(key, Array.Empty<byte>(), 0, 0, readOptions: _options) >= 0;
+    }
 
-        public bool Contains(byte[] key)
-        {
-            return db.Get(key, Array.Empty<byte>(), 0, 0, readOptions: options) >= 0;
-        }
+    public byte[]? TryGet(byte[] key)
+    {
+        return _db.Get(key, readOptions: _options);
+    }
 
-        public byte[] TryGet(byte[] key)
-        {
-            return db.Get(key, readOptions: options);
-        }
+    public bool TryGet(byte[] key, [NotNullWhen(true)] out byte[]? value)
+    {
+        value = _db.Get(key, readOptions: _options);
+        return value != null;
+    }
 
-        public void Dispose()
-        {
-            snapshot.Dispose();
-            batch.Dispose();
-        }
+    public void Dispose()
+    {
+        _snapshot.Dispose();
+        _batch.Dispose();
     }
 }

@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2024 The Neo Project.
+// Copyright (C) 2015-2025 The Neo Project.
 //
 // RpcContractState.cs file belongs to the neo project and is free
 // software distributed under the MIT software license, see the
@@ -13,30 +13,29 @@ using Neo.Json;
 using Neo.SmartContract;
 using Neo.SmartContract.Manifest;
 
-namespace Neo.Network.RPC.Models
+namespace Neo.Network.RPC.Models;
+
+public class RpcContractState
 {
-    public class RpcContractState
+    public ContractState ContractState { get; set; }
+
+    public JObject ToJson()
     {
-        public ContractState ContractState { get; set; }
+        return ContractState.ToJson();
+    }
 
-        public JObject ToJson()
+    public static RpcContractState FromJson(JObject json)
+    {
+        return new RpcContractState
         {
-            return ContractState.ToJson();
-        }
-
-        public static RpcContractState FromJson(JObject json)
-        {
-            return new RpcContractState
+            ContractState = new ContractState
             {
-                ContractState = new ContractState
-                {
-                    Id = (int)json["id"].AsNumber(),
-                    UpdateCounter = (ushort)json["updatecounter"].AsNumber(),
-                    Hash = UInt160.Parse(json["hash"].AsString()),
-                    Nef = RpcNefFile.FromJson((JObject)json["nef"]),
-                    Manifest = ContractManifest.FromJson((JObject)json["manifest"])
-                }
-            };
-        }
+                Id = (int)json["id"].AsNumber(),
+                UpdateCounter = (ushort)json["updatecounter"].AsNumber(),
+                Hash = UInt160.Parse(json["hash"].AsString()),
+                Nef = RpcNefFile.FromJson((JObject)json["nef"]),
+                Manifest = ContractManifest.FromJson((JObject)json["manifest"])
+            }
+        };
     }
 }

@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2024 The Neo Project.
+// Copyright (C) 2015-2025 The Neo Project.
 //
 // RpcRequest.cs file belongs to the neo project and is free
 // software distributed under the MIT software license, see the
@@ -10,39 +10,38 @@
 // modifications are permitted.
 
 using Neo.Json;
-using System.Linq;
 
-namespace Neo.Network.RPC.Models
+namespace Neo.Network.RPC.Models;
+
+public class RpcRequest
 {
-    public class RpcRequest
+    public JToken Id { get; set; }
+
+    public string JsonRpc { get; set; }
+
+    public string Method { get; set; }
+
+    public JToken[] Params { get; set; }
+
+    public static RpcRequest FromJson(JObject json)
     {
-        public JToken Id { get; set; }
-
-        public string JsonRpc { get; set; }
-
-        public string Method { get; set; }
-
-        public JToken[] Params { get; set; }
-
-        public static RpcRequest FromJson(JObject json)
+        return new RpcRequest
         {
-            return new RpcRequest
-            {
-                Id = json["id"],
-                JsonRpc = json["jsonrpc"].AsString(),
-                Method = json["method"].AsString(),
-                Params = ((JArray)json["params"]).ToArray()
-            };
-        }
+            Id = json["id"],
+            JsonRpc = json["jsonrpc"].AsString(),
+            Method = json["method"].AsString(),
+            Params = ((JArray)json["params"]).ToArray()
+        };
+    }
 
-        public JObject ToJson()
+    public JObject ToJson()
+    {
+        return new()
         {
-            var json = new JObject();
-            json["id"] = Id;
-            json["jsonrpc"] = JsonRpc;
-            json["method"] = Method;
-            json["params"] = new JArray(Params);
-            return json;
-        }
+            ["id"] = Id,
+            ["jsonrpc"] = JsonRpc,
+            ["method"] = Method,
+            ["params"] = new JArray(Params)
+        };
     }
 }

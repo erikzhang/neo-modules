@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2024 The Neo Project.
+// Copyright (C) 2015-2025 The Neo Project.
 //
 // LevelDBStore.cs file belongs to the neo project and is free
 // software distributed under the MIT software license, see the
@@ -11,25 +11,23 @@
 
 using Neo.IO.Data.LevelDB;
 using Neo.Persistence;
-using System;
-using System.Linq;
 
-namespace Neo.Plugins.Storage
+namespace Neo.Plugins.Storage;
+
+public class LevelDBStore : Plugin, IStoreProvider
 {
-    public class LevelDBStore : Plugin, IStoreProvider
+    public override string Description => "Uses LevelDB to store the blockchain data";
+
+    public LevelDBStore()
     {
-        public override string Description => "Uses LevelDB to store the blockchain data";
+        StoreFactory.RegisterProvider(this);
+    }
 
-        public LevelDBStore()
-        {
-            StoreFactory.RegisterProvider(this);
-        }
-
-        public IStore GetStore(string path)
-        {
-            if (Environment.CommandLine.Split(' ').Any(p => p == "/repair" || p == "--repair"))
-                DB.Repair(path, Options.Default);
-            return new Store(path);
-        }
+    public IStore GetStore(string? path)
+    {
+        ArgumentNullException.ThrowIfNull(path);
+        if (Environment.CommandLine.Split(' ').Any(p => p == "/repair" || p == "--repair"))
+            DB.Repair(path, Options.Default);
+        return new Store(path);
     }
 }

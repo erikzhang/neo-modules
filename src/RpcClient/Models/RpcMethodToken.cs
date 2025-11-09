@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2024 The Neo Project.
+// Copyright (C) 2015-2025 The Neo Project.
 //
 // RpcMethodToken.cs file belongs to the neo project and is free
 // software distributed under the MIT software license, see the
@@ -11,22 +11,20 @@
 
 using Neo.Json;
 using Neo.SmartContract;
-using System;
 
-namespace Neo.Network.RPC.Models
+namespace Neo.Network.RPC.Models;
+
+class RpcMethodToken
 {
-    class RpcMethodToken
+    public static MethodToken FromJson(JObject json)
     {
-        public static MethodToken FromJson(JObject json)
+        return new MethodToken
         {
-            return new MethodToken
-            {
-                Hash = UInt160.Parse(json["hash"].AsString()),
-                Method = json["method"].AsString(),
-                ParametersCount = (ushort)json["paramcount"].AsNumber(),
-                HasReturnValue = json["hasreturnvalue"].AsBoolean(),
-                CallFlags = (CallFlags)Enum.Parse(typeof(CallFlags), json["callflags"].AsString())
-            };
-        }
+            Hash = UInt160.Parse(json["hash"].AsString()),
+            Method = json["method"].AsString(),
+            ParametersCount = (ushort)json["paramcount"].AsNumber(),
+            HasReturnValue = json["hasreturnvalue"].AsBoolean(),
+            CallFlags = (CallFlags)Enum.Parse(typeof(CallFlags), json["callflags"].AsString())
+        };
     }
 }

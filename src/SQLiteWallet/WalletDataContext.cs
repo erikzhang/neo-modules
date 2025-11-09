@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2024 The Neo Project.
+// Copyright (C) 2015-2025 The Neo Project.
 //
 // WalletDataContext.cs file belongs to the neo project and is free
 // software distributed under the MIT software license, see the
@@ -14,26 +14,26 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Neo.Wallets.SQLite;
 
-class WalletDataContext : DbContext
+internal class WalletDataContext : DbContext
 {
     public DbSet<Account> Accounts { get; set; }
     public DbSet<Address> Addresses { get; set; }
     public DbSet<Contract> Contracts { get; set; }
     public DbSet<Key> Keys { get; set; }
 
-    private readonly string filename;
+    private readonly string _filename;
 
     public WalletDataContext(string filename)
     {
-        this.filename = filename;
+        _filename = filename;
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         base.OnConfiguring(optionsBuilder);
-        SqliteConnectionStringBuilder sb = new()
+        var sb = new SqliteConnectionStringBuilder()
         {
-            DataSource = filename
+            DataSource = _filename
         };
         optionsBuilder.UseSqlite(sb.ToString());
     }

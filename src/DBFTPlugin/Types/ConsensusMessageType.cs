@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2024 The Neo Project.
+// Copyright (C) 2015-2025 The Neo Project.
 //
 // ConsensusMessageType.cs file belongs to the neo project and is free
 // software distributed under the MIT software license, see the
@@ -9,17 +9,16 @@
 // Redistribution and use in source and binary forms with or without
 // modifications are permitted.
 
-namespace Neo.Consensus
+namespace Neo.Plugins.DBFTPlugin.Types;
+
+public enum ConsensusMessageType : byte
 {
-    public enum ConsensusMessageType : byte
-    {
-        ChangeView = 0x00,
+    ChangeView = 0x00,
 
-        PrepareRequest = 0x20,
-        PrepareResponse = 0x21,
-        Commit = 0x30,
+    PrepareRequest = 0x20,
+    PrepareResponse = 0x21,
+    Commit = 0x30,
 
-        RecoveryRequest = 0x40,
-        RecoveryMessage = 0x41,
-    }
+    RecoveryRequest = 0x40,
+    RecoveryMessage = 0x41,
 }

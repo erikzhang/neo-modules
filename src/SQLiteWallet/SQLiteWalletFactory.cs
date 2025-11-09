@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2024 The Neo Project.
+// Copyright (C) 2015-2025 The Neo Project.
 //
 // SQLiteWalletFactory.cs file belongs to the neo project and is free
 // software distributed under the MIT software license, see the
@@ -26,10 +26,10 @@ public class SQLiteWalletFactory : Plugin, IWalletFactory
 
     public bool Handle(string path)
     {
-        return GetExtension(path).ToLowerInvariant() == ".db3";
+        return GetExtension(path).Equals(".db3", StringComparison.InvariantCultureIgnoreCase);
     }
 
-    public Wallet CreateWallet(string name, string path, string password, ProtocolSettings settings)
+    public Wallet CreateWallet(string? name, string path, string password, ProtocolSettings settings)
     {
         return SQLiteWallet.Create(path, password, settings);
     }

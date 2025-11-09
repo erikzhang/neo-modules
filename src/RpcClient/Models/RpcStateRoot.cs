@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2024 The Neo Project.
+// Copyright (C) 2015-2025 The Neo Project.
 //
 // RpcStateRoot.cs file belongs to the neo project and is free
 // software distributed under the MIT software license, see the
@@ -11,26 +11,24 @@
 
 using Neo.Json;
 using Neo.Network.P2P.Payloads;
-using System.Linq;
 
-namespace Neo.Network.RPC.Models
+namespace Neo.Network.RPC.Models;
+
+public class RpcStateRoot
 {
-    public class RpcStateRoot
-    {
-        public byte Version;
-        public uint Index;
-        public UInt256 RootHash;
-        public Witness Witness;
+    public byte Version;
+    public uint Index;
+    public UInt256 RootHash;
+    public Witness Witness;
 
-        public static RpcStateRoot FromJson(JObject json)
+    public static RpcStateRoot FromJson(JObject json)
+    {
+        return new RpcStateRoot
         {
-            return new RpcStateRoot
-            {
-                Version = (byte)json["version"].AsNumber(),
-                Index = (uint)json["index"].AsNumber(),
-                RootHash = UInt256.Parse(json["roothash"].AsString()),
-                Witness = ((JArray)json["witnesses"]).Select(p => Utility.WitnessFromJson((JObject)p)).FirstOrDefault()
-            };
-        }
+            Version = (byte)json["version"].AsNumber(),
+            Index = (uint)json["index"].AsNumber(),
+            RootHash = UInt256.Parse(json["roothash"].AsString()),
+            Witness = ((JArray)json["witnesses"]).Select(p => Utility.WitnessFromJson((JObject)p)).FirstOrDefault()
+        };
     }
 }

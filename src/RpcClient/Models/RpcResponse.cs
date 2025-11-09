@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2024 The Neo Project.
+// Copyright (C) 2015-2025 The Neo Project.
 //
 // RpcResponse.cs file belongs to the neo project and is free
 // software distributed under the MIT software license, see the
@@ -11,73 +11,74 @@
 
 using Neo.Json;
 
-namespace Neo.Network.RPC.Models
+namespace Neo.Network.RPC.Models;
+
+public class RpcResponse
 {
-    public class RpcResponse
+    public JToken Id { get; set; }
+
+    public string JsonRpc { get; set; }
+
+    public RpcResponseError Error { get; set; }
+
+    public JToken Result { get; set; }
+
+    public string RawResponse { get; set; }
+
+    public static RpcResponse FromJson(JObject json)
     {
-        public JToken Id { get; set; }
-
-        public string JsonRpc { get; set; }
-
-        public RpcResponseError Error { get; set; }
-
-        public JToken Result { get; set; }
-
-        public string RawResponse { get; set; }
-
-        public static RpcResponse FromJson(JObject json)
+        var response = new RpcResponse
         {
-            RpcResponse response = new()
-            {
-                Id = json["id"],
-                JsonRpc = json["jsonrpc"].AsString(),
-                Result = json["result"]
-            };
+            Id = json["id"],
+            JsonRpc = json["jsonrpc"].AsString(),
+            Result = json["result"]
+        };
 
-            if (json["error"] != null)
-            {
-                response.Error = RpcResponseError.FromJson((JObject)json["error"]);
-            }
-
-            return response;
+        if (json["error"] != null)
+        {
+            response.Error = RpcResponseError.FromJson((JObject)json["error"]);
         }
 
-        public JObject ToJson()
-        {
-            JObject json = new();
-            json["id"] = Id;
-            json["jsonrpc"] = JsonRpc;
-            json["error"] = Error?.ToJson();
-            json["result"] = Result;
-            return json;
-        }
+        return response;
     }
 
-    public class RpcResponseError
+    public JObject ToJson()
     {
-        public int Code { get; set; }
-
-        public string Message { get; set; }
-
-        public JToken Data { get; set; }
-
-        public static RpcResponseError FromJson(JObject json)
+        return new()
         {
-            return new RpcResponseError
-            {
-                Code = (int)json["code"].AsNumber(),
-                Message = json["message"].AsString(),
-                Data = json["data"],
-            };
-        }
+            ["id"] = Id,
+            ["jsonrpc"] = JsonRpc,
+            ["error"] = Error?.ToJson(),
+            ["result"] = Result
+        };
+    }
+}
 
-        public JObject ToJson()
+public class RpcResponseError
+{
+    public int Code { get; set; }
+
+    public string Message { get; set; }
+
+    public JToken Data { get; set; }
+
+    public static RpcResponseError FromJson(JObject json)
+    {
+        return new RpcResponseError
         {
-            JObject json = new();
-            json["code"] = Code;
-            json["message"] = Message;
-            json["data"] = Data;
-            return json;
-        }
+            Code = (int)json["code"].AsNumber(),
+            Message = json["message"].AsString(),
+            Data = json["data"],
+        };
+    }
+
+    public JObject ToJson()
+    {
+        return new()
+        {
+            ["code"] = Code,
+            ["message"] = Message,
+            ["data"] = Data
+        };
     }
 }

@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2024 The Neo Project.
+// Copyright (C) 2015-2025 The Neo Project.
 //
 // Session.cs file belongs to the neo project and is free
 // software distributed under the MIT software license, see the
@@ -14,45 +14,42 @@ using Neo.Persistence;
 using Neo.SmartContract;
 using Neo.SmartContract.Iterators;
 using Neo.SmartContract.Native;
-using System;
-using System.Collections.Generic;
 
-namespace Neo.Plugins
+namespace Neo.Plugins.RpcServer;
+
+class Session : IDisposable
 {
-    class Session : IDisposable
+    public readonly StoreCache Snapshot;
+    public readonly ApplicationEngine Engine;
+    public readonly Dictionary<Guid, IIterator> Iterators = new();
+    public DateTime StartTime;
+
+    public Session(NeoSystem system, byte[] script, Signer[]? signers, Witness[]? witnesses, long datoshi, Diagnostic? diagnostic)
     {
-        public readonly SnapshotCache Snapshot;
-        public readonly ApplicationEngine Engine;
-        public readonly Dictionary<Guid, IIterator> Iterators = new();
-        public DateTime StartTime;
-
-        public Session(NeoSystem system, byte[] script, Signer[] signers, Witness[] witnesses, long gas, Diagnostic diagnostic)
+        Random random = new();
+        Snapshot = system.GetSnapshotCache();
+        var tx = signers == null ? null : new Transaction
         {
-            Random random = new();
-            Snapshot = system.GetSnapshot();
-            Transaction tx = signers == null ? null : new Transaction
-            {
-                Version = 0,
-                Nonce = (uint)random.Next(),
-                ValidUntilBlock = NativeContract.Ledger.CurrentIndex(Snapshot) + system.Settings.MaxValidUntilBlockIncrement,
-                Signers = signers,
-                Attributes = Array.Empty<TransactionAttribute>(),
-                Script = script,
-                Witnesses = witnesses
-            };
-            Engine = ApplicationEngine.Run(script, Snapshot, container: tx, settings: system.Settings, gas: gas, diagnostic: diagnostic);
-            ResetExpiration();
-        }
+            Version = 0,
+            Nonce = (uint)random.Next(),
+            ValidUntilBlock = NativeContract.Ledger.CurrentIndex(Snapshot) + system.GetMaxValidUntilBlockIncrement(),
+            Signers = signers,
+            Attributes = [],
+            Script = script,
+            Witnesses = witnesses ?? []
+        };
+        Engine = ApplicationEngine.Run(script, Snapshot, container: tx, settings: system.Settings, gas: datoshi, diagnostic: diagnostic);
+        ResetExpiration();
+    }
 
-        public void ResetExpiration()
-        {
-            StartTime = DateTime.UtcNow;
-        }
+    public void ResetExpiration()
+    {
+        StartTime = DateTime.UtcNow;
+    }
 
-        public void Dispose()
-        {
-            Engine.Dispose();
-            Snapshot.Dispose();
-        }
+    public void Dispose()
+    {
+        Engine.Dispose();
+        Snapshot.Dispose();
     }
 }

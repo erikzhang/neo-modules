@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2024 The Neo Project.
+// Copyright (C) 2015-2025 The Neo Project.
 //
 // Store.cs file belongs to the neo project and is free
 // software distributed under the MIT software license, see the
@@ -11,57 +11,76 @@
 
 using Neo.IO.Data.LevelDB;
 using Neo.Persistence;
-using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 
-namespace Neo.Plugins.Storage
+namespace Neo.Plugins.Storage;
+
+/// <summary>
+/// <code>Iterating over the whole dataset can be time-consuming. Depending upon how large the dataset is.</code>
+/// </summary>
+internal class Store : IStore, IEnumerable<KeyValuePair<byte[], byte[]>>
 {
-    internal class Store : IStore
+    private readonly DB _db;
+    private readonly Options _options;
+
+    /// <inheritdoc/>
+    public event IStore.OnNewSnapshotDelegate? OnNewSnapshot;
+
+    public Store(string path)
     {
-        private readonly DB db;
-
-        public Store(string path)
+        _options = new Options
         {
-            this.db = DB.Open(path, new Options { CreateIfMissing = true, FilterPolicy = Native.leveldb_filterpolicy_create_bloom(15) });
-        }
-
-        public void Delete(byte[] key)
-        {
-            db.Delete(WriteOptions.Default, key);
-        }
-
-        public void Dispose()
-        {
-            db.Dispose();
-        }
-
-        public IEnumerable<(byte[], byte[])> Seek(byte[] prefix, SeekDirection direction = SeekDirection.Forward)
-        {
-            return db.Seek(ReadOptions.Default, prefix, direction, (k, v) => (k, v));
-        }
-
-        public ISnapshot GetSnapshot()
-        {
-            return new Snapshot(db);
-        }
-
-        public void Put(byte[] key, byte[] value)
-        {
-            db.Put(WriteOptions.Default, key, value);
-        }
-
-        public void PutSync(byte[] key, byte[] value)
-        {
-            db.Put(WriteOptions.SyncWrite, key, value);
-        }
-
-        public bool Contains(byte[] key)
-        {
-            return db.Contains(ReadOptions.Default, key);
-        }
-
-        public byte[] TryGet(byte[] key)
-        {
-            return db.Get(ReadOptions.Default, key);
-        }
+            CreateIfMissing = true,
+            FilterPolicy = Native.leveldb_filterpolicy_create_bloom(15),
+            CompressionLevel = CompressionType.SnappyCompression,
+        };
+        _db = DB.Open(path, _options);
     }
+
+    public void Delete(byte[] key)
+    {
+        _db.Delete(WriteOptions.Default, key);
+    }
+
+    public void Dispose()
+    {
+        _db.Dispose();
+        _options.Dispose();
+    }
+
+    public IStoreSnapshot GetSnapshot()
+    {
+        var snapshot = new Snapshot(this, _db);
+        OnNewSnapshot?.Invoke(this, snapshot);
+        return snapshot;
+    }
+
+    public void Put(byte[] key, byte[] value) =>
+        _db.Put(WriteOptions.Default, key, value);
+
+    public void PutSync(byte[] key, byte[] value) =>
+        _db.Put(WriteOptions.SyncWrite, key, value);
+
+    public bool Contains(byte[] key) =>
+        _db.Contains(ReadOptions.Default, key);
+
+    public byte[]? TryGet(byte[] key) =>
+        _db.Get(ReadOptions.Default, key);
+
+    public bool TryGet(byte[] key, [NotNullWhen(true)] out byte[]? value)
+    {
+        value = _db.Get(ReadOptions.Default, key);
+        return value != null;
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<(byte[], byte[])> Find(byte[]? keyOrPrefix, SeekDirection direction = SeekDirection.Forward) =>
+        _db.Seek(ReadOptions.Default, keyOrPrefix, direction);
+
+    public IEnumerator<KeyValuePair<byte[], byte[]>> GetEnumerator() =>
+        _db.GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() =>
+        GetEnumerator();
 }

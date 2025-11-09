@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2024 The Neo Project.
+// Copyright (C) 2015-2025 The Neo Project.
 //
 // TreeNode.cs file belongs to the neo project and is free
 // software distributed under the MIT software license, see the
@@ -9,37 +9,36 @@
 // Redistribution and use in source and binary forms with or without
 // modifications are permitted.
 
-using System.Collections.Generic;
+namespace Neo.Plugins.RpcServer;
 
-namespace Neo.Plugins
+public class TreeNode<T>
 {
-    class TreeNode<T>
+    private readonly List<TreeNode<T>> children = new();
+
+    public T Item { get; }
+    public TreeNode<T>? Parent { get; }
+    public IReadOnlyList<TreeNode<T>> Children => children;
+
+    internal TreeNode(T item, TreeNode<T>? parent)
     {
-        private readonly List<TreeNode<T>> children = new();
+        Item = item;
+        Parent = parent;
+    }
 
-        public T Item { get; }
-        public TreeNode<T> Parent { get; }
-        public IReadOnlyList<TreeNode<T>> Children => children;
+    public TreeNode<T> AddChild(T item)
+    {
+        TreeNode<T> child = new(item, this);
+        children.Add(child);
+        return child;
+    }
 
-        internal TreeNode(T item, TreeNode<T> parent)
+    internal IEnumerable<T> GetItems()
+    {
+        yield return Item;
+        foreach (var child in children)
         {
-            Item = item;
-            Parent = parent;
-        }
-
-        public TreeNode<T> AddChild(T item)
-        {
-            TreeNode<T> child = new(item, this);
-            children.Add(child);
-            return child;
-        }
-
-        internal IEnumerable<T> GetItems()
-        {
-            yield return Item;
-            foreach (var child in children)
-                foreach (T item in child.GetItems())
-                    yield return item;
+            foreach (T item in child.GetItems())
+                yield return item;
         }
     }
 }

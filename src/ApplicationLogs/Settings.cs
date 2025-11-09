@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2024 The Neo Project.
+// Copyright (C) 2015-2025 The Neo Project.
 //
 // Settings.cs file belongs to the neo project and is free
 // software distributed under the MIT software license, see the
@@ -11,29 +11,31 @@
 
 using Microsoft.Extensions.Configuration;
 
-namespace Neo.Plugins
+namespace Neo.Plugins.ApplicationLogs;
+
+internal class ApplicationLogsSettings : IPluginSettings
 {
-    internal class Settings
+    public string Path { get; }
+    public uint Network { get; }
+    public int MaxStackSize { get; }
+
+    public bool Debug { get; }
+
+    public static ApplicationLogsSettings Default { get; private set; } = default!;
+
+    public UnhandledExceptionPolicy ExceptionPolicy { get; }
+
+    private ApplicationLogsSettings(IConfigurationSection section)
     {
-        public string Path { get; }
-        public uint Network { get; }
-        public int MaxStackSize { get; }
+        Path = section.GetValue("Path", "ApplicationLogs_{0}");
+        Network = section.GetValue("Network", 5195086u);
+        MaxStackSize = section.GetValue("MaxStackSize", (int)ushort.MaxValue);
+        Debug = section.GetValue("Debug", false);
+        ExceptionPolicy = section.GetValue("UnhandledExceptionPolicy", UnhandledExceptionPolicy.Ignore);
+    }
 
-        public bool Debug { get; }
-
-        public static Settings Default { get; private set; }
-
-        private Settings(IConfigurationSection section)
-        {
-            this.Path = section.GetValue("Path", "ApplicationLogs_{0}");
-            this.Network = section.GetValue("Network", 5195086u);
-            this.MaxStackSize = section.GetValue("MaxStackSize", (int)ushort.MaxValue);
-            this.Debug = section.GetValue("Debug", false);
-        }
-
-        public static void Load(IConfigurationSection section)
-        {
-            Default = new Settings(section);
-        }
+    public static void Load(IConfigurationSection section)
+    {
+        Default = new ApplicationLogsSettings(section);
     }
 }

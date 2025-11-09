@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2024 The Neo Project.
+// Copyright (C) 2015-2025 The Neo Project.
 //
 // RpcBlock.cs file belongs to the neo project and is free
 // software distributed under the MIT software license, see the
@@ -12,32 +12,31 @@
 using Neo.Json;
 using Neo.Network.P2P.Payloads;
 
-namespace Neo.Network.RPC.Models
+namespace Neo.Network.RPC.Models;
+
+public class RpcBlock
 {
-    public class RpcBlock
+    public Block Block { get; set; }
+
+    public uint Confirmations { get; set; }
+
+    public UInt256 NextBlockHash { get; set; }
+
+    public JObject ToJson(ProtocolSettings protocolSettings)
     {
-        public Block Block { get; set; }
+        var json = Utility.BlockToJson(Block, protocolSettings);
+        json["confirmations"] = Confirmations;
+        json["nextblockhash"] = NextBlockHash?.ToString();
+        return json;
+    }
 
-        public uint Confirmations { get; set; }
-
-        public UInt256 NextBlockHash { get; set; }
-
-        public JObject ToJson(ProtocolSettings protocolSettings)
+    public static RpcBlock FromJson(JObject json, ProtocolSettings protocolSettings)
+    {
+        return new RpcBlock
         {
-            JObject json = Utility.BlockToJson(Block, protocolSettings);
-            json["confirmations"] = Confirmations;
-            json["nextblockhash"] = NextBlockHash?.ToString();
-            return json;
-        }
-
-        public static RpcBlock FromJson(JObject json, ProtocolSettings protocolSettings)
-        {
-            return new RpcBlock
-            {
-                Block = Utility.BlockFromJson(json, protocolSettings),
-                Confirmations = (uint)json["confirmations"].AsNumber(),
-                NextBlockHash = json["nextblockhash"] is null ? null : UInt256.Parse(json["nextblockhash"].AsString())
-            };
-        }
+            Block = Utility.BlockFromJson(json, protocolSettings),
+            Confirmations = (uint)json["confirmations"].AsNumber(),
+            NextBlockHash = json["nextblockhash"] is null ? null : UInt256.Parse(json["nextblockhash"].AsString())
+        };
     }
 }

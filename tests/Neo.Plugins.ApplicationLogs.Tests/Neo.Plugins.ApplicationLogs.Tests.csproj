@@ -1,0 +1,8 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\ApplicationLogs\ApplicationLogs.csproj" />
+    <ProjectReference Include="..\..\src\RocksDBStore\RocksDBStore.csproj" />
+  </ItemGroup>
+
+</Project>

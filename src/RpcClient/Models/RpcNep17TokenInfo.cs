@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2024 The Neo Project.
+// Copyright (C) 2015-2025 The Neo Project.
 //
 // RpcNep17TokenInfo.cs file belongs to the neo project and is free
 // software distributed under the MIT software license, see the
@@ -11,16 +11,15 @@
 
 using System.Numerics;
 
-namespace Neo.Network.RPC.Models
+namespace Neo.Network.RPC.Models;
+
+public class RpcNep17TokenInfo
 {
-    public class RpcNep17TokenInfo
-    {
-        public string Name { get; set; }
+    public string Name { get; set; }
 
-        public string Symbol { get; set; }
+    public string Symbol { get; set; }
 
-        public byte Decimals { get; set; }
+    public byte Decimals { get; set; }
 
-        public BigInteger TotalSupply { get; set; }
-    }
+    public BigInteger TotalSupply { get; set; }
 }

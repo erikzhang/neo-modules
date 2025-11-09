@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2024 The Neo Project.
+// Copyright (C) 2015-2025 The Neo Project.
 //
 // Account.cs file belongs to the neo project and is free
 // software distributed under the MIT software license, see the
@@ -11,8 +11,8 @@
 
 namespace Neo.Wallets.SQLite;
 
-class Account
+internal class Account
 {
-    public byte[] PublicKeyHash { get; set; }
-    public string Nep2key { get; set; }
+    public required byte[] PublicKeyHash { get; set; }
+    public required string Nep2key { get; set; }
 }

@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2024 The Neo Project.
+// Copyright (C) 2015-2025 The Neo Project.
 //
 // ChangeViewReason.cs file belongs to the neo project and is free
 // software distributed under the MIT software license, see the
@@ -9,15 +9,14 @@
 // Redistribution and use in source and binary forms with or without
 // modifications are permitted.
 
-namespace Neo.Consensus
+namespace Neo.Plugins.DBFTPlugin.Types;
+
+public enum ChangeViewReason : byte
 {
-    public enum ChangeViewReason : byte
-    {
-        Timeout = 0x0,
-        ChangeAgreement = 0x1,
-        TxNotFound = 0x2,
-        TxRejectedByPolicy = 0x3,
-        TxInvalid = 0x4,
-        BlockRejectedByPolicy = 0x5
-    }
+    Timeout = 0x0,
+    ChangeAgreement = 0x1,
+    TxNotFound = 0x2,
+    TxRejectedByPolicy = 0x3,
+    TxInvalid = 0x4,
+    BlockRejectedByPolicy = 0x5
 }

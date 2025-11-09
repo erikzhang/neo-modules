@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2024 The Neo Project.
+// Copyright (C) 2015-2025 The Neo Project.
 //
 // RpcNep17Balances.cs file belongs to the neo project and is free
 // software distributed under the MIT software license, see the
@@ -11,63 +11,60 @@
 
 using Neo.Json;
 using Neo.Wallets;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 
-namespace Neo.Network.RPC.Models
+namespace Neo.Network.RPC.Models;
+
+public class RpcNep17Balances
 {
-    public class RpcNep17Balances
+    public UInt160 UserScriptHash { get; set; }
+
+    public List<RpcNep17Balance> Balances { get; set; }
+
+    public JObject ToJson(ProtocolSettings protocolSettings)
     {
-        public UInt160 UserScriptHash { get; set; }
-
-        public List<RpcNep17Balance> Balances { get; set; }
-
-        public JObject ToJson(ProtocolSettings protocolSettings)
+        return new()
         {
-            JObject json = new();
-            json["balance"] = Balances.Select(p => p.ToJson()).ToArray();
-            json["address"] = UserScriptHash.ToAddress(protocolSettings.AddressVersion);
-            return json;
-        }
-
-        public static RpcNep17Balances FromJson(JObject json, ProtocolSettings protocolSettings)
-        {
-            RpcNep17Balances nep17Balance = new()
-            {
-                Balances = ((JArray)json["balance"]).Select(p => RpcNep17Balance.FromJson((JObject)p, protocolSettings)).ToList(),
-                UserScriptHash = json["address"].ToScriptHash(protocolSettings)
-            };
-            return nep17Balance;
-        }
+            ["balance"] = Balances.Select(p => p.ToJson()).ToArray(),
+            ["address"] = UserScriptHash.ToAddress(protocolSettings.AddressVersion)
+        };
     }
 
-    public class RpcNep17Balance
+    public static RpcNep17Balances FromJson(JObject json, ProtocolSettings protocolSettings)
     {
-        public UInt160 AssetHash { get; set; }
-
-        public BigInteger Amount { get; set; }
-
-        public uint LastUpdatedBlock { get; set; }
-
-        public JObject ToJson()
+        return new()
         {
-            JObject json = new();
-            json["assethash"] = AssetHash.ToString();
-            json["amount"] = Amount.ToString();
-            json["lastupdatedblock"] = LastUpdatedBlock;
-            return json;
-        }
+            Balances = ((JArray)json["balance"]).Select(p => RpcNep17Balance.FromJson((JObject)p, protocolSettings)).ToList(),
+            UserScriptHash = json["address"].ToScriptHash(protocolSettings)
+        };
+    }
+}
 
-        public static RpcNep17Balance FromJson(JObject json, ProtocolSettings protocolSettings)
+public class RpcNep17Balance
+{
+    public UInt160 AssetHash { get; set; }
+
+    public BigInteger Amount { get; set; }
+
+    public uint LastUpdatedBlock { get; set; }
+
+    public JObject ToJson()
+    {
+        return new()
         {
-            RpcNep17Balance balance = new()
-            {
-                AssetHash = json["assethash"].ToScriptHash(protocolSettings),
-                Amount = BigInteger.Parse(json["amount"].AsString()),
-                LastUpdatedBlock = (uint)json["lastupdatedblock"].AsNumber()
-            };
-            return balance;
-        }
+            ["assethash"] = AssetHash.ToString(),
+            ["amount"] = Amount.ToString(),
+            ["lastupdatedblock"] = LastUpdatedBlock
+        };
+    }
+
+    public static RpcNep17Balance FromJson(JObject json, ProtocolSettings protocolSettings)
+    {
+        return new()
+        {
+            AssetHash = json["assethash"].ToScriptHash(protocolSettings),
+            Amount = BigInteger.Parse(json["amount"].AsString()),
+            LastUpdatedBlock = (uint)json["lastupdatedblock"].AsNumber()
+        };
     }
 }

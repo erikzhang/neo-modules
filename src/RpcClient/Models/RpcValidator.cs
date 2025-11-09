@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2024 The Neo Project.
+// Copyright (C) 2015-2025 The Neo Project.
 //
 // RpcValidator.cs file belongs to the neo project and is free
 // software distributed under the MIT software license, see the
@@ -12,29 +12,22 @@
 using Neo.Json;
 using System.Numerics;
 
-namespace Neo.Network.RPC.Models
+namespace Neo.Network.RPC.Models;
+
+public class RpcValidator
 {
-    public class RpcValidator
+    public string PublicKey { get; set; }
+
+    public BigInteger Votes { get; set; }
+
+    public JObject ToJson() => new() { ["publickey"] = PublicKey, ["votes"] = Votes.ToString() };
+
+    public static RpcValidator FromJson(JObject json)
     {
-        public string PublicKey { get; set; }
-
-        public BigInteger Votes { get; set; }
-
-        public JObject ToJson()
+        return new RpcValidator
         {
-            JObject json = new();
-            json["publickey"] = PublicKey;
-            json["votes"] = Votes.ToString();
-            return json;
-        }
-
-        public static RpcValidator FromJson(JObject json)
-        {
-            return new RpcValidator
-            {
-                PublicKey = json["publickey"].AsString(),
-                Votes = BigInteger.Parse(json["votes"].AsString()),
-            };
-        }
+            PublicKey = json["publickey"].AsString(),
+            Votes = BigInteger.Parse(json["votes"].AsString()),
+        };
     }
 }

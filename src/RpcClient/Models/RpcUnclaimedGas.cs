@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2024 The Neo Project.
+// Copyright (C) 2015-2025 The Neo Project.
 //
 // RpcUnclaimedGas.cs file belongs to the neo project and is free
 // software distributed under the MIT software license, see the
@@ -11,29 +11,22 @@
 
 using Neo.Json;
 
-namespace Neo.Network.RPC.Models
+namespace Neo.Network.RPC.Models;
+
+public class RpcUnclaimedGas
 {
-    public class RpcUnclaimedGas
+    public long Unclaimed { get; set; }
+
+    public string Address { get; set; }
+
+    public JObject ToJson() => new() { ["unclaimed"] = Unclaimed.ToString(), ["address"] = Address };
+
+    public static RpcUnclaimedGas FromJson(JObject json)
     {
-        public long Unclaimed { get; set; }
-
-        public string Address { get; set; }
-
-        public JObject ToJson()
+        return new RpcUnclaimedGas
         {
-            JObject json = new();
-            json["unclaimed"] = Unclaimed.ToString();
-            json["address"] = Address;
-            return json;
-        }
-
-        public static RpcUnclaimedGas FromJson(JObject json)
-        {
-            return new RpcUnclaimedGas
-            {
-                Unclaimed = long.Parse(json["unclaimed"].AsString()),
-                Address = json["address"].AsString()
-            };
-        }
+            Unclaimed = long.Parse(json["unclaimed"].AsString()),
+            Address = json["address"].AsString()
+        };
     }
 }

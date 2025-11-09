@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2024 The Neo Project.
+// Copyright (C) 2015-2025 The Neo Project.
 //
 // RpcServer.Utilities.cs file belongs to the neo project and is free
 // software distributed under the MIT software license, see the
@@ -11,45 +11,71 @@
 
 using Neo.Json;
 using Neo.Wallets;
-using System.Linq;
 
-namespace Neo.Plugins
+namespace Neo.Plugins.RpcServer;
+
+partial class RpcServer
 {
-    partial class RpcServer
+    /// <summary>
+    /// Lists all plugins.
+    /// <para>Request format:</para>
+    /// <code>{"jsonrpc": "2.0", "id": 1, "method": "listplugins"}</code>
+    /// <para>Response format:</para>
+    /// <code>{
+    ///   "jsonrpc": "2.0",
+    ///   "id": 1,
+    ///   "result": [
+    ///     {"name": "The plugin name", "version": "The plugin version", "interfaces": ["The plugin method name"]}
+    ///   ]
+    /// }</code>
+    /// </summary>
+    /// <returns>A JSON array containing the plugin information.</returns>
+    [RpcMethod]
+    protected internal virtual JToken ListPlugins()
     {
-        [RpcMethod]
-        protected virtual JToken ListPlugins(JArray _params)
+        return new JArray(Plugin.Plugins
+            .OrderBy(u => u.Name)
+            .Select(u => new JObject
+            {
+                ["name"] = u.Name,
+                ["version"] = u.Version.ToString(),
+                ["interfaces"] = new JArray(u.GetType().GetInterfaces()
+                    .Select(p => p.Name)
+                    .Where(p => p.EndsWith("Plugin"))
+                    .Select(p => (JToken)p))
+            }));
+    }
+
+    /// <summary>
+    /// Validates an address.
+    /// <para>Request format:</para>
+    /// <code>{"jsonrpc": "2.0", "id": 1, "method": "validateaddress", "params": ["The Base58Check address"]}</code>
+    /// <para>Response format:</para>
+    /// <code>{
+    ///   "jsonrpc": "2.0",
+    ///   "id": 1,
+    ///   "result": {"address": "The Base58Check address", "isvalid": true}
+    /// }</code>
+    /// </summary>
+    /// <param name="address">The address as a string.</param>
+    /// <returns>A JSON object containing the address and whether it is valid.</returns>
+    [RpcMethod]
+    protected internal virtual JToken ValidateAddress(string address)
+    {
+        UInt160? scriptHash;
+        try
         {
-            return new JArray(Plugin.Plugins
-                .OrderBy(u => u.Name)
-                .Select(u => new JObject
-                {
-                    ["name"] = u.Name,
-                    ["version"] = u.Version.ToString(),
-                    ["interfaces"] = new JArray(u.GetType().GetInterfaces()
-                        .Select(p => p.Name)
-                        .Where(p => p.EndsWith("Plugin"))
-                        .Select(p => (JToken)p))
-                }));
+            scriptHash = address.ToScriptHash(system.Settings.AddressVersion);
+        }
+        catch
+        {
+            scriptHash = null;
         }
 
-        [RpcMethod]
-        protected virtual JToken ValidateAddress(JArray _params)
+        return new JObject()
         {
-            string address = Result.Ok_Or(() => _params[0].AsString(), RpcError.InvalidParams.WithData($"Invlid address format: {_params[0]}"));
-            JObject json = new();
-            UInt160 scriptHash;
-            try
-            {
-                scriptHash = address.ToScriptHash(system.Settings.AddressVersion);
-            }
-            catch
-            {
-                scriptHash = null;
-            }
-            json["address"] = address;
-            json["isvalid"] = scriptHash != null;
-            return json;
-        }
+            ["address"] = address,
+            ["isvalid"] = scriptHash != null,
+        };
     }
 }

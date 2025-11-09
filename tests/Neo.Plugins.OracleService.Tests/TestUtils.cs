@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2024 The Neo Project.
+// Copyright (C) 2015-2025 The Neo Project.
 //
 // TestUtils.cs file belongs to the neo project and is free
 // software distributed under the MIT software license, see the
@@ -10,23 +10,47 @@
 // modifications are permitted.
 
 using Neo.IO;
+using Neo.Json;
 using Neo.SmartContract;
 using Neo.SmartContract.Native;
+using Neo.Wallets;
+using Neo.Wallets.NEP6;
 
-namespace Neo.Plugins
+namespace Neo.Plugins.OracleService.Tests;
+
+public static class TestUtils
 {
-    public static class TestUtils
-    {
-        public static StorageKey CreateStorageKey(this NativeContract contract, byte prefix, ISerializable key)
-        {
-            var k = new KeyBuilder(contract.Id, prefix);
-            if (key != null) k = k.Add(key);
-            return k;
-        }
+    public static readonly ProtocolSettings settings = ProtocolSettings.Load("config.json");
+    public static readonly byte[] ValidatorScript = Contract.CreateSignatureRedeemScript(settings.StandbyCommittee[0]);
+    public static readonly UInt160 ValidatorScriptHash = ValidatorScript.ToScriptHash();
+    public static readonly string ValidatorAddress = ValidatorScriptHash.ToAddress(ProtocolSettings.Default.AddressVersion);
+    public static readonly byte[] MultisigScript = Contract.CreateMultiSigRedeemScript(1, settings.StandbyCommittee);
+    public static readonly UInt160 MultisigScriptHash = MultisigScript.ToScriptHash();
+    public static readonly string MultisigAddress = MultisigScriptHash.ToAddress(ProtocolSettings.Default.AddressVersion);
 
-        public static StorageKey CreateStorageKey(this NativeContract contract, byte prefix, uint value)
+    public static StorageKey CreateStorageKey(this NativeContract contract, byte prefix, ISerializableSpan key)
+    {
+        var k = new KeyBuilder(contract.Id, prefix);
+        if (key != null) k = k.Add(key);
+        return k;
+    }
+
+    public static StorageKey CreateStorageKey(this NativeContract contract, byte prefix, uint value)
+    {
+        return new KeyBuilder(contract.Id, prefix).AddBigEndian(value);
+    }
+
+    public static NEP6Wallet GenerateTestWallet(string password)
+    {
+        JObject wallet = new JObject()
         {
-            return new KeyBuilder(contract.Id, prefix).AddBigEndian(value);
-        }
+            ["name"] = "noname",
+            ["version"] = new Version("1.0").ToString(),
+            ["scrypt"] = new ScryptParameters(2, 1, 1).ToJson(),
+            ["accounts"] = new JArray(),
+            ["extra"] = null
+        };
+        Assert.AreEqual("{\"name\":\"noname\",\"version\":\"1.0\",\"scrypt\":{\"n\":2,\"r\":1,\"p\":1},\"accounts\":[],\"extra\":null}", wallet.ToString());
+        return new NEP6Wallet(null, password, settings, wallet);
     }
 }

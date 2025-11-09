@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2024 The Neo Project.
+// Copyright (C) 2015-2025 The Neo Project.
 //
 // RpcException.cs file belongs to the neo project and is free
 // software distributed under the MIT software license, see the
@@ -9,15 +9,12 @@
 // Redistribution and use in source and binary forms with or without
 // modifications are permitted.
 
-using System;
+namespace Neo.Network.RPC;
 
-namespace Neo.Network.RPC
+public class RpcException : Exception
 {
-    public class RpcException : Exception
+    public RpcException(int code, string message) : base(message)
     {
-        public RpcException(int code, string message) : base(message)
-        {
-            HResult = code;
-        }
+        HResult = code;
     }
 }
